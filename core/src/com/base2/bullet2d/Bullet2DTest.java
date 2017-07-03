@@ -1,10 +1,11 @@
 package com.base2.bullet2d;
 
+import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.PerspectiveCamera;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.VertexAttributes.Usage;
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.Material;
@@ -44,7 +45,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ArrayMap;
 import com.badlogic.gdx.utils.Disposable;
 
-public class Bullet2DTest implements ApplicationListener {
+public class Bullet2DTest extends ApplicationAdapter {
 
 	final static short GROUND_FLAG = 1 << 8;
 	final static short OBJECT_FLAG = 1 << 9;
@@ -86,6 +87,8 @@ public class Bullet2DTest implements ApplicationListener {
 			motionState.transform = transform;
 			body = new btRigidBody(constructionInfo);
 			body.setMotionState(motionState);
+			body.setLinearFactor(new Vector3(1,1,0));
+			body.setAngularFactor(new Vector3(0,0,1));
 		}
 
 		@Override
@@ -124,7 +127,7 @@ public class Bullet2DTest implements ApplicationListener {
 		}
 	}
 
-	PerspectiveCamera cam;
+	OrthographicCamera cam;
 	CameraInputController camController;
 	ModelBatch modelBatch;
 	Environment environment;
@@ -149,9 +152,8 @@ public class Bullet2DTest implements ApplicationListener {
 		environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.4f, 0.4f, 0.4f, 1f));
 		environment.add(new DirectionalLight().set(0.8f, 0.8f, 0.8f, -1f, -0.8f, -0.2f));
 
-		cam = new PerspectiveCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-		cam.position.set(3f, 7f, 10f);
-		cam.lookAt(0, 4f, 0);
+		cam = new OrthographicCamera(Gdx.graphics.getWidth() / 32, Gdx.graphics.getHeight() / 32);
+		cam.position.set(0, 4, 10f);
 		cam.near = 1f;
 		cam.far = 300f;
 		cam.update();
@@ -210,8 +212,8 @@ public class Bullet2DTest implements ApplicationListener {
 
 	public void spawn () {
 		GameObject obj = constructors.values[1 + MathUtils.random(constructors.size - 2)].construct();
-		obj.transform.setFromEulerAngles(MathUtils.random(360f), MathUtils.random(360f), MathUtils.random(360f));
-		obj.transform.trn(MathUtils.random(-2.5f, 2.5f), 9f, MathUtils.random(-2.5f, 2.5f));
+		//obj.transform.setFromEulerAngles(MathUtils.random(360f), MathUtils.random(360f), MathUtils.random(360f));
+		obj.transform.trn(0, 9f, 0);
 		obj.body.proceedToTransform(obj.transform);
 		obj.body.setUserValue(instances.size);
 		obj.body.setCollisionFlags(obj.body.getCollisionFlags() | btCollisionObject.CollisionFlags.CF_CUSTOM_MATERIAL_CALLBACK);
@@ -267,17 +269,5 @@ public class Bullet2DTest implements ApplicationListener {
 
 		modelBatch.dispose();
 		model.dispose();
-	}
-
-	@Override
-	public void pause () {
-	}
-
-	@Override
-	public void resume () {
-	}
-
-	@Override
-	public void resize (int width, int height) {
 	}
 }
