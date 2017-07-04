@@ -19,6 +19,7 @@ import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.Bullet;
 import com.badlogic.gdx.physics.bullet.collision.Collision;
@@ -77,8 +78,12 @@ public class Bullet2DTest extends ApplicationAdapter {
 		public final btRigidBody body;
 		public final MyMotionState motionState;
 		public final Matrix4 transform;
+		private final Vector3 translation;
+		private final Quaternion rotation;
 
 		public GameObject (btRigidBody.btRigidBodyConstructionInfo constructionInfo) {
+			rotation = new Quaternion();
+			translation = new Vector3();
 			motionState = new MyMotionState();
 			transform = new Matrix4();
 			motionState.transform = transform;
@@ -92,6 +97,14 @@ public class Bullet2DTest extends ApplicationAdapter {
 		public void dispose () {
 			body.dispose();
 			motionState.dispose();
+		}
+
+		public Vector3 getTranslation() {
+			return transform.getTranslation(translation);
+		}
+
+		public Quaternion getRotation() {
+			return transform.getRotation(rotation);
 		}
 
 		static class Constructor implements Disposable {
@@ -182,7 +195,7 @@ public class Bullet2DTest extends ApplicationAdapter {
 	}
 
 	public void spawn () {
-		GameObject obj = constructors.values[1 + MathUtils.random(constructors.size - 2)].construct();
+		GameObject obj = constructors.get("box").construct();//constructors.values[1 + MathUtils.random(constructors.size - 2)].construct();
 		//obj.transform.setFromEulerAngles(MathUtils.random(360f), MathUtils.random(360f), MathUtils.random(360f));
 		obj.transform.trn(0, 9f, 0);
 		obj.body.proceedToTransform(obj.transform);
@@ -218,9 +231,20 @@ public class Bullet2DTest extends ApplicationAdapter {
 		shapeRenderer.setColor(0, 1, 0, 1);
 		for (GameObject instance: instances) {
 			btCollisionShape shape = instance.body.getCollisionShape();
-			System.out.println(shape);
+
+			if (shape instanceof btBoxShape) {
+				btBoxShape boxShape = (btBoxShape) shape;
+				float x = instance.getTranslation().x;
+				float y = instance.getTranslation().y;
+				float width = boxShape.getHalfExtentsWithMargin().x;
+				float height = boxShape.getHalfExtentsWithMargin().y;
+				shapeRenderer.identity();
+				shapeRenderer.translate(x, y, 0);
+				shapeRenderer.rotate(0, 0, 1, instance.getRotation().getAngleAround(0, 0, 1));
+				shapeRenderer.rect(-width, -height, width * 2, height * 2);
+			}
 		}
-		Gdx.app.exit();
+		shapeRenderer.end();
 	}
 
 	@Override
@@ -241,7 +265,6 @@ public class Bullet2DTest extends ApplicationAdapter {
 
 		contactListener.dispose();
 
-		modelBatch.dispose();
-		model.dispose();
+		shapeRenderer.dispose();
 	}
 }
