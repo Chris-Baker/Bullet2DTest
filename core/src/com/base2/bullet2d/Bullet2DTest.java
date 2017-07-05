@@ -169,10 +169,9 @@ public class Bullet2DTest extends ApplicationAdapter {
 		constructors.put("ground", new GameObject.Constructor(new btBoxShape(new Vector3(2.5f, 0.5f, 2.5f)), 0f));
 		constructors.put("sphere", new GameObject.Constructor(new btSphereShape(0.5f), 1f));
 		constructors.put("box", new GameObject.Constructor(new btBoxShape(new Vector3(0.5f, 0.5f, 0.5f)), 1f));
-		constructors.put("cone", new GameObject.Constructor(new btConeShape(0.5f, 2f), 1f));
+		//constructors.put("cone", new GameObject.Constructor(new btConeShape(0.5f, 2f), 1f));
 		constructors.put("capsule", new GameObject.Constructor(new btCapsuleShape(.5f, 1f), 1f));
-		constructors.put("cylinder", new GameObject.Constructor(new btCylinderShape(new Vector3(.5f, 1f, .5f)),
-				1f));
+		constructors.put("cylinder", new GameObject.Constructor(new btCylinderShape(new Vector3(.5f, 1f, .5f)), 1f));
 
 		collisionConfig = new btDefaultCollisionConfiguration();
 		dispatcher = new btCollisionDispatcher(collisionConfig);
@@ -195,7 +194,8 @@ public class Bullet2DTest extends ApplicationAdapter {
 	}
 
 	public void spawn () {
-		GameObject obj = constructors.get("box").construct();//constructors.values[1 + MathUtils.random(constructors.size - 2)].construct();
+		//GameObject obj = constructors.values[1 + MathUtils.random(constructors.size - 2)].construct(); // obj = constructors.get("cylinder").construct();
+		GameObject obj = constructors.get("capsule").construct();
 		//obj.transform.setFromEulerAngles(MathUtils.random(360f), MathUtils.random(360f), MathUtils.random(360f));
 		obj.transform.trn(0, 9f, 0);
 		obj.body.proceedToTransform(obj.transform);
@@ -232,16 +232,44 @@ public class Bullet2DTest extends ApplicationAdapter {
 		for (GameObject instance: instances) {
 			btCollisionShape shape = instance.body.getCollisionShape();
 
+			float x = instance.getTranslation().x;
+			float y = instance.getTranslation().y;
+
+			shapeRenderer.identity();
+
 			if (shape instanceof btBoxShape) {
 				btBoxShape boxShape = (btBoxShape) shape;
-				float x = instance.getTranslation().x;
-				float y = instance.getTranslation().y;
 				float width = boxShape.getHalfExtentsWithMargin().x;
 				float height = boxShape.getHalfExtentsWithMargin().y;
-				shapeRenderer.identity();
+
 				shapeRenderer.translate(x, y, 0);
 				shapeRenderer.rotate(0, 0, 1, instance.getRotation().getAngleAround(0, 0, 1));
 				shapeRenderer.rect(-width, -height, width * 2, height * 2);
+			}
+			else if (shape instanceof btSphereShape) {
+				btSphereShape sphereShape = (btSphereShape) shape;
+				float radius = sphereShape.getRadius();
+				shapeRenderer.circle(x, y, radius, 16);
+			}
+			else if (shape instanceof btCylinderShape) {
+				btCylinderShape cylinderShape = (btCylinderShape) shape;
+				float width = cylinderShape.getRadius();
+				float height = cylinderShape.getHalfExtentsWithMargin().y;
+
+				shapeRenderer.translate(x, y, 0);
+				shapeRenderer.rotate(0, 0, 1, instance.getRotation().getAngleAround(0, 0, 1));
+				shapeRenderer.rect(-width, -height, width * 2, height * 2);
+			}
+			else if (shape instanceof btCapsuleShape) {
+				btCapsuleShape capsuleShape = (btCapsuleShape) shape;
+				float width = capsuleShape.getRadius();
+				float height = capsuleShape.getHalfHeight();
+
+				shapeRenderer.translate(x, y, 0);
+				shapeRenderer.rotate(0, 0, 1, instance.getRotation().getAngleAround(0, 0, 1));
+				shapeRenderer.circle(0, height, width, 16);
+				shapeRenderer.rect(-width, -height, width * 2, height * 2);
+				shapeRenderer.circle(0, -height, width, 16);
 			}
 		}
 		shapeRenderer.end();
