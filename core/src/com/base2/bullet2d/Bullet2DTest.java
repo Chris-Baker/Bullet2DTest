@@ -194,9 +194,7 @@ public class Bullet2DTest extends ApplicationAdapter {
 	}
 
 	public void spawn () {
-		//GameObject obj = constructors.values[1 + MathUtils.random(constructors.size - 2)].construct(); // obj = constructors.get("cylinder").construct();
-		GameObject obj = constructors.get("capsule").construct();
-		//obj.transform.setFromEulerAngles(MathUtils.random(360f), MathUtils.random(360f), MathUtils.random(360f));
+		GameObject obj = constructors.values[1 + MathUtils.random(constructors.size - 2)].construct(); // obj = constructors.get("cylinder").construct();
 		obj.transform.trn(0, 9f, 0);
 		obj.body.proceedToTransform(obj.transform);
 		obj.body.setUserValue(instances.size);
